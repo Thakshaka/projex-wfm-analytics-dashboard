@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Analytics Dashboard - WFM Analytics</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-title {
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .card-value {
+            color: #333;
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .card-subtitle {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .card.active .card-value { color: #4CAF50; }
+        .card.overdue .card-value { color: #f44336; }
+        .card.completed .card-value { color: #2196F3; }
+        .card.budget .card-value { color: #FF9800; }
+
+        .section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-active { background: #4CAF50; color: white; }
+        .status-overdue { background: #f44336; color: white; }
+        .status-completed { background: #2196F3; color: white; }
+
+        .risk-high { background: #ffebee; border-left: 4px solid #f44336; }
+        .risk-medium { background: #fff3e0; border-left: 4px solid #ff9800; }
+
+        .alert-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .alert-item h4 {
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .alert-item p {
+            color: #666;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+
+        .alert-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            background: #f44336;
+            color: white;
+            border-radius: 3px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .filter-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Project Analytics Dashboard</h1>
+            <p>Monitor project performance, budgets, timelines, and risks</p>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards" id="summaryCards">
+            <div class="card active">
+                <div class="card-title">Active Projects</div>
+                <div class="card-value" id="activeCount">-</div>
+                <div class="card-subtitle">Currently in progress</div>
+            </div>
+            <div class="card overdue">
+                <div class="card-title">Overdue Projects</div>
+                <div class="card-value" id="overdueCount">-</div>
+                <div class="card-subtitle">Past deadline</div>
+            </div>
+            <div class="card completed">
+                <div class="card-title">Completed Projects</div>
+                <div class="card-value" id="completedCount">-</div>
+                <div class="card-subtitle">Successfully finished</div>
+            </div>
+            <div class="card budget">
+                <div class="card-title">Total Budget</div>
+                <div class="card-value" id="totalBudget">-</div>
+                <div class="card-subtitle">Allocated amount</div>
+            </div>
+        </div>
+
+        <!-- Projects List -->
+        <div class="section">
+            <h2 class="section-title">Projects Overview</h2>
+            <div class="filter-bar">
+                <button class="filter-btn active" data-status="all" onclick="filterProjects(null, this)">All</button>
+                <button class="filter-btn" data-status="active" onclick="filterProjects('active', this)">Active</button>
+                <button class="filter-btn" data-status="overdue" onclick="filterProjects('overdue', this)">Overdue</button>
+                <button class="filter-btn" data-status="completed" onclick="filterProjects('completed', this)">Completed</button>
+            </div>
+            <div class="table-container">
+                <table id="projectsTable">
+                    <thead>
+                        <tr>
+                            <th>Project Name</th>
+                            <th>Client</th>
+                            <th>Manager</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Status</th>
+                            <th>Budget Allocated</th>
+                            <th>Budget Burnt</th>
+                            <th>Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTableBody">
+                        <tr>
+                            <td colspan="9" class="loading">Loading projects...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Budget Analysis -->
+        <div class="section">
+            <h2 class="section-title">Budget vs Actual Spend</h2>
+            <div class="chart-container">
+                <canvas id="budgetChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Project Manager Leaderboard -->
+        <div class="section">
+            <h2 class="section-title">Project Manager Leaderboard</h2>
+            <div class="chart-container">
+                <canvas id="leaderboardChart"></canvas>
+            </div>
+            <div class="table-container" style="margin-top: 20px;">
+                <table id="leaderboardTable">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Manager Name</th>
+                            <th>Total Projects</th>
+                            <th>Completed</th>
+                            <th>Active</th>
+                            <th>Overdue</th>
+                            <th>Budget Managed</th>
+                            <th>Avg Variance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboardTableBody">
+                        <tr>
+                            <td colspan="8" class="loading">Loading leaderboard...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Project Timeline (Gantt) -->
+        <div class="section">
+            <h2 class="section-title">Project Timeline</h2>
+            <div class="chart-container">
+                <canvas id="timelineChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Risk Alerts -->
+        <div class="section">
+            <h2 class="section-title">⚠️ Risk Alerts</h2>
+            <div id="risksContainer">
+                <div class="loading">Loading risk alerts...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let authToken = null;
+
+        let allProjects = [];
+        let currentFilter = null;
+
+        // Authentication helper
+        async function getAuthHeaders() {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            return headers;
+        }
+
+        // Initialize dashboard
+        async function initDashboard() {
+            try {
+                await Promise.all([
+                    loadSummary(),
+                    loadProjects(),
+                    loadLeaderboard(),
+                    loadTimeline(),
+                    loadRisks()
+                ]);
+            } catch (error) {
+                console.error('Error initializing dashboard:', error);
+                showError('Failed to load dashboard data. Make sure the backend server is running.');
+            }
+        }
+
+        // Load summary statistics
+        async function loadSummary() {
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`${API_BASE_URL}/projects/summary`, {
+                    headers: headers
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                
+                document.getElementById('activeCount').textContent = data.active_projects || 0;
+                document.getElementById('overdueCount').textContent = data.overdue_projects || 0;
+                document.getElementById('completedCount').textContent = data.completed_projects || 0;
+                document.getElementById('totalBudget').textContent = formatCurrency(data.total_budget_allocated || 0);
+            } catch (error) {
+                console.error('Error loading summary:', error);
+            }
+        }
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`${API_BASE_URL}/projects`, {
+                    headers: headers
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                allProjects = await response.json();
+                renderProjects(allProjects);
+                updateBudgetChart(allProjects);
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectsTableBody').innerHTML = 
+                    '<tr><td colspan="9" class="error">Failed to load projects</td></tr>';
+            }
+        }
+
+        // Filter projects
+        function filterProjects(status, buttonElement) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            }
+            
+            let filtered = allProjects;
+            if (status) {
+                filtered = allProjects.filter(p => p.status_category === status);
+            }
+            renderProjects(filtered);
+        }
+
+        // Make filterProjects available globally for onclick
+        window.filterProjects = filterProjects;
+
+        // Render projects table
+        function renderProjects(projects) {
+            const tbody = document.getElementById('projectsTableBody');
+            
+            if (projects.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="loading">No projects found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = projects.map(project => `
+                <tr>
+                    <td><strong>${project.project_name}</strong></td>
+                    <td>${project.client_name || 'N/A'}</td>
+                    <td>${project.manager_name || 'N/A'}</td>
+                    <td>${formatDate(project.start_date)}</td>
+                    <td>${formatDate(project.end_date)}</td>
+                    <td><span class="status-badge status-${project.status_category}">${project.status_category}</span></td>
+                    <td>${formatCurrency(project.total_allocated)}</td>
+                    <td>${formatCurrency(project.total_burnt)}</td>
+                    <td style="color: ${project.budget_variance > 0 ? '#f44336' : '#4CAF50'}">
+                        ${project.budget_variance > 0 ? '+' : ''}${project.budget_variance.toFixed(1)}%
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update budget chart
+        function updateBudgetChart(projects) {
+            const topProjects = projects
+                .filter(p => p.total_allocated > 0)
+                .sort((a, b) => b.total_allocated - a.total_allocated)
+                .slice(0, 10);
+
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            
+            if (window.budgetChartInstance) {
+                window.budgetChartInstance.destroy();
+            }
+
+            window.budgetChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topProjects.map(p => p.project_name),
+                    datasets: [{
+                        label: 'Budget Allocated',
+                        data: topProjects.map(p => p.total_allocated),
+                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Budget Burnt',
+                        data: topProjects.map(p => p.total_burnt),
+                        backgroundColor: 'rgba(255, 152, 0, 0.6)',
+                        borderColor: 'rgba(255, 152, 0, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + (value / 1000).toFixed(0) + 'k';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load leaderboard
+        async function loadLeaderboard() {
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`${API_BASE_URL}/projects/manager-leaderboard`, {
+                    headers: headers
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                
+                renderLeaderboardTable(data);
+                updateLeaderboardChart(data);
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+            }
+        }
+
+        // Render leaderboard table
+        function renderLeaderboardTable(managers) {
+            const tbody = document.getElementById('leaderboardTableBody');
+            
+            if (managers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="loading">No data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = managers.map((manager, index) => `
+                <tr>
+                    <td><strong>#${index + 1}</strong></td>
+                    <td>${manager.manager_name || 'N/A'}</td>
+                    <td>${manager.total_projects}</td>
+                    <td style="color: #4CAF50">${manager.completed_projects}</td>
+                    <td style="color: #2196F3">${manager.active_projects}</td>
+                    <td style="color: #f44336">${manager.overdue_projects}</td>
+                    <td>${formatCurrency(manager.total_budget_managed)}</td>
+                    <td style="color: ${manager.avg_budget_variance > 0 ? '#f44336' : '#4CAF50'}">
+                        ${manager.avg_budget_variance > 0 ? '+' : ''}${manager.avg_budget_variance.toFixed(1)}%
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update leaderboard chart
+        function updateLeaderboardChart(managers) {
+            const topManagers = managers.slice(0, 10);
+            
+            const ctx = document.getElementById('leaderboardChart').getContext('2d');
+            
+            if (window.leaderboardChartInstance) {
+                window.leaderboardChartInstance.destroy();
+            }
+
+            window.leaderboardChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topManagers.map(m => m.manager_name || 'N/A'),
+                    datasets: [{
+                        label: 'Completed Projects',
+                        data: topManagers.map(m => m.completed_projects),
+                        backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Active Projects',
+                        data: topManagers.map(m => m.active_projects),
+                        backgroundColor: 'rgba(33, 150, 243, 0.6)',
+                        borderColor: 'rgba(33, 150, 243, 1)',
+                        borderWidth: 1
+                    }, {
+                        label: 'Overdue Projects',
+                        data: topManagers.map(m => m.overdue_projects),
+                        backgroundColor: 'rgba(244, 67, 54, 0.6)',
+                        borderColor: 'rgba(244, 67, 54, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load timeline
+        async function loadTimeline() {
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`${API_BASE_URL}/projects/timeline`, {
+                    headers: headers
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                updateTimelineChart(data);
+            } catch (error) {
+                console.error('Error loading timeline:', error);
+            }
+        }
+
+        // Update timeline chart (Gantt-like)
+        function updateTimelineChart(projects) {
+            const ctx = document.getElementById('timelineChart').getContext('2d');
+            
+            if (window.timelineChartInstance) {
+                window.timelineChartInstance.destroy();
+            }
+
+            // Filter projects with valid dates and sort by start date
+            const validProjects = projects
+                .filter(p => p.start && p.end)
+                .sort((a, b) => new Date(a.start) - new Date(b.start))
+                .slice(0, 20); // Limit to 20 projects for readability
+            
+            if (validProjects.length === 0) {
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.fillStyle = '#666';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('No timeline data available', ctx.canvas.width / 2, ctx.canvas.height / 2);
+                return;
+            }
+
+            // Calculate duration for each project
+            const durations = validProjects.map(p => {
+                const start = new Date(p.start);
+                const end = new Date(p.end);
+                return Math.ceil((end - start) / (1000 * 60 * 60 * 24)); // days
+            });
+
+            window.timelineChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: validProjects.map(p => p.name.length > 30 ? p.name.substring(0, 30) + '...' : p.name),
+                    datasets: [{
+                        label: 'Project Duration (days)',
+                        data: durations,
+                        backgroundColor: validProjects.map(p => 
+                            p.status === 'completed' ? 'rgba(33, 150, 243, 0.6)' : 'rgba(102, 126, 234, 0.6)'
+                        ),
+                        borderColor: validProjects.map(p => 
+                            p.status === 'completed' ? 'rgba(33, 150, 243, 1)' : 'rgba(102, 126, 234, 1)'
+                        ),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Duration (days)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    const project = validProjects[context.dataIndex];
+                                    return [
+                                        `Client: ${project.client}`,
+                                        `Manager: ${project.manager}`,
+                                        `Start: ${formatDate(project.start)}`,
+                                        `End: ${formatDate(project.end)}`,
+                                        `Budget: ${formatCurrency(project.budget_allocated)}`
+                                    ];
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load risks
+        async function loadRisks() {
+            try {
+                const headers = await getAuthHeaders();
+                const response = await fetch(`${API_BASE_URL}/projects/risks`, {
+                    headers: headers
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const data = await response.json();
+                renderRisks(data);
+            } catch (error) {
+                console.error('Error loading risks:', error);
+                document.getElementById('risksContainer').innerHTML = 
+                    '<div class="error">Failed to load risk alerts</div>';
+            }
+        }
+
+        // Render risks
+        function renderRisks(risks) {
+            const container = document.getElementById('risksContainer');
+            
+            if (risks.length === 0) {
+                container.innerHTML = '<div class="loading">✅ No risk alerts at this time</div>';
+                return;
+            }
+
+            container.innerHTML = risks.map(risk => `
+                <div class="alert-item risk-${risk.risk_level}">
+                    <h4>
+                        ${risk.risk_level === 'high' ? '<span class="alert-tag">HIGH RISK</span>' : '<span class="alert-tag" style="background: #ff9800">MEDIUM</span>'}
+                        ${risk.project_name}
+                    </h4>
+                    <p><strong>Client:</strong> ${risk.client_name}</p>
+                    <p><strong>Manager:</strong> ${risk.manager_name}</p>
+                    ${risk.days_overdue > 0 ? `<p><strong>Days Overdue:</strong> ${risk.days_overdue} days</p>` : ''}
+                    ${risk.budget_variance_pct > 0 ? `<p><strong>Budget Overrun:</strong> ${risk.budget_variance_pct.toFixed(1)}%</p>` : ''}
+                    <p><strong>Alerts:</strong> ${risk.alerts.join(' | ')}</p>
+                </div>
+            `).join('');
+        }
+
+        // Utility functions
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function showError(message) {
+            const container = document.querySelector('.container');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            container.insertBefore(errorDiv, container.firstChild);
+        }
+
+        // Initialize on page load
+        initDashboard();
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            initDashboard();
+        }, 30000);
+    </script>
+</body>
+</html>
+
