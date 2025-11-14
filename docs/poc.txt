@@ -1,0 +1,127 @@
+WFM Analytics Dashboard
+1. Summary
+Business Context:
+GDC Consultants needs a central analytics dashboard to monitor workforce management, improve resource use, spot risks, and simplify decision-making using data from internal data sources.
+Purpose:
+Enable management and operations teams to visualize all critical company, employee, client, and project metrics, and leverage AI/ML for prediction and efficiency gains.
+
+2. Data Sources & Integration
+Data Sources:
+Database tables: Project, Employee, Timesheet, Expense, Client, Leave, Task Assignment
+REST APIs: For extracting structured data day-to-day and historic metrics.
+
+Integration Approach:
+Connect dashboard directly to WFM APIs for frequent auto-refreshes (live data)
+Unified data model for dashboard visualizations
+
+3. Dashboard Modules (Suggestions)
+A. Company Overview
+Visualizes:
+Total Projects, Clients, Employees
+Utilization rate % (hours vs. capacity)
+Budget/spend, financial trends
+Time filters (week/month/quarter)
+Top KPIs at a glance
+How it helps:
+“Are we growing? Over/under staffed?”
+Easy macro view for top management; quick insights for board/executive meetings
+Wireframe Sketch:
+
+System Data:
+All counts, utilization, and trends from WFM APIs and database tables.
+Example:
+“Last quarter, utilization was only 65%; this month it’s 85% after new project onboarding.”
+
+B. Project Analytics
+Visualizes:
+List of active, overdue, completed projects
+Budget vs actual spend for each
+Status (active, delayed, complete)
+Project Manager leaderboard
+Project timeline (Gantt)
+Risks/alerts (overdue, over budget)
+How it helps:
+PMs spot which projects need help, allocate support, close gaps before clients complain.
+Wireframe Sketch:
+
+System Data:
+Projects, budget, manager, start/end dates from data sources.
+Example:
+“PRJ-104 is 12 days late and 20% over budget. PM receives automated risk alert.”
+
+C. Employee Analytics
+Visualizes:
+Timesheet submission % by staff
+Overtime hours, workload heatmap
+Leave tracking (calendar style)
+Capacity gauge (over/underutilized)
+How it helps:
+HR sees risk of burnout, can prompt for leave, reward high performers, and balance workloads.
+Wireframe Sketch:
+
+System Data:
+Timesheet records, leave logs, employee tables.
+Example:
+“David is working 54 hours a week and missed leave deadlines. HR notified automatically.”
+
+D. Client Analytics
+Visualizes:
+Revenue per client, cost/profit breakdown
+Number & status of projects/client
+Satisfaction or repeat business indicators
+Timeline of tasks/projects by client
+How it helps:
+Account managers target at-risk or high-value clients, allocate resources wisely.
+Wireframe Sketch:
+
+System Data:
+Project <> client table joins, billing history, expense analytics.
+Example:
+“XYZ generates 40% of revenue, but their projects are repeatedly delayed and cost over budget.”
+
+E. Timesheet & Expense Analytics (Optional)
+Visualizes:
+Submission rates (who is late/missing)
+Expense anomalies (unusual claims, duplicate entries)
+Approval bottlenecks (avg time to approve)
+Top cost categories
+How it helps:
+Saves money, speeds up payments, flags errors/fraud, helps in audits.
+System Data:
+Timesheet submissions, expense logs, approval step records.
+Example:
+“Approvals for expenses now take 2 days instead of 9, saving time. $8k employee claim flagged for review.”
+
+F. Workflow & Productivity (Optional)
+Visualizes:
+Team velocity chart (sprints, points)
+Issue/blocker map (modules most affected)
+Approval pipeline (average step times)
+How it helps:
+Managers see which processes slow business, focus improvement efforts.
+System Data:
+QA docs, retrospectives, development reports, approval workflow logs.
+Example:
+“Team velocity fell after new hire onboarding. QA bug map shows Projects module as most blocked.”
+
+G. Predictive & AI Insights
+Visualizes:
+Delay risk % for projects (based on data patterns)
+Anomaly alerts (expense, timesheet, project outliers)
+ML model explainability (why flagged)
+How it helps:
+Let management be proactive.
+Wireframe Sketch:
+
+System Data:
+All historical records, ML model outputs, risk/event logs.
+Example:
+“Project delay predicted lets PM adjust timeline.”
+
+4. Data Security & Limitations
+Security:
+RBAC (Role-Based Access Control) on dashboards, audit logs for data views, encryption in transit and at rest, tiered access for sensitive info.
+Limitations:
+Accurate analytics depend on full data submission, clean records, and API reliability. Predictive features need historic, labeled data for training and validation.
+
+

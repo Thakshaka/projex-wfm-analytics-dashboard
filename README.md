@@ -66,4 +66,4 @@ docs/                       # Documentation
 - **Dev mode**: `ENVIRONMENT=dev` (no auth)
 - **Prod mode**: `ENVIRONMENT=prod` (JWT auth required)
 
-See [SETUP.md](SETUP.md) for details.
+See [docs/SETUP.md](docs/SETUP.md) for details.
