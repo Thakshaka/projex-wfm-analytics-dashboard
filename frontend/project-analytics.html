@@ -476,11 +476,25 @@
                 .sort((a, b) => b.total_allocated - a.total_allocated)
                 .slice(0, 10);
 
+            if (topProjects.length === 0) {
+                console.log('No projects with budget data');
+                return;
+            }
+
             const ctx = document.getElementById('budgetChart').getContext('2d');
             
             if (window.budgetChartInstance) {
                 window.budgetChartInstance.destroy();
             }
+
+            const allocatedData = topProjects.map(p => p.total_allocated || 0);
+            const burntData = topProjects.map(p => p.total_burnt || 0);
+
+            console.log('Budget Chart Data:', {
+                labels: topProjects.map(p => p.project_name),
+                allocated: allocatedData,
+                burnt: burntData
+            });
 
             window.budgetChartInstance = new Chart(ctx, {
                 type: 'bar',
@@ -488,16 +502,17 @@
                     labels: topProjects.map(p => p.project_name),
                     datasets: [{
                         label: 'Budget Allocated',
-                        data: topProjects.map(p => p.total_allocated),
+                        data: allocatedData,
                         backgroundColor: 'rgba(102, 126, 234, 0.6)',
                         borderColor: 'rgba(102, 126, 234, 1)',
                         borderWidth: 1
                     }, {
                         label: 'Budget Burnt',
-                        data: topProjects.map(p => p.total_burnt),
+                        data: burntData,
                         backgroundColor: 'rgba(255, 152, 0, 0.6)',
                         borderColor: 'rgba(255, 152, 0, 1)',
-                        borderWidth: 1
+                        borderWidth: 1,
+                        minBarLength: 2
                     }]
                 },
                 options: {
@@ -517,6 +532,18 @@
                         legend: {
                             display: true,
                             position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += formatCurrency(context.parsed.y);
+                                    return label;
+                                }
+                            }
                         }
                     }
                 }

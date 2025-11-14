@@ -56,9 +56,9 @@ async def get_projects(
             """, (project['project_id'],))
             budget = cursor.fetchone()
             
-            project['total_allocated'] = float(budget['total_allocated'] or 0)
-            project['total_burnt'] = float(budget['total_burnt'] or 0)
-            project['total_remaining'] = float(budget['total_remaining'] or 0)
+            project['total_allocated'] = float(budget['total_allocated'] or 0) if budget else 0.0
+            project['total_burnt'] = float(budget['total_burnt'] or 0) if budget else 0.0
+            project['total_remaining'] = float(budget['total_remaining'] or 0) if budget else 0.0
             
             # Calculate variance
             if project['total_allocated'] > 0:
