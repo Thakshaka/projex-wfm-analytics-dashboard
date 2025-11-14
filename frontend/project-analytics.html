@@ -84,10 +84,11 @@
             font-size: 12px;
         }
 
-        .card.active .card-value { color: #4CAF50; }
-        .card.overdue .card-value { color: #f44336; }
-        .card.completed .card-value { color: #2196F3; }
-        .card.budget .card-value { color: #FF9800; }
+         .card.active .card-value { color: #4CAF50; }
+         .card.overdue .card-value { color: #f44336; }
+         .card.completed .card-value { color: #2196F3; }
+         .card.budget .card-value { color: #FF9800; }
+         .card.budget-burnt .card-value { color: #F44336; }
 
         .section {
             background: white;
@@ -265,6 +266,11 @@
                 <div class="card-value" id="totalBudget">-</div>
                 <div class="card-subtitle">Allocated amount</div>
             </div>
+            <div class="card budget-burnt">
+                <div class="card-title">Budget Burnt</div>
+                <div class="card-value" id="totalBudgetBurnt">-</div>
+                <div class="card-subtitle">Actual spend</div>
+            </div>
         </div>
 
         <!-- Projects List -->
@@ -398,10 +404,11 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const data = await response.json();
                 
-                document.getElementById('activeCount').textContent = data.active_projects || 0;
-                document.getElementById('overdueCount').textContent = data.overdue_projects || 0;
-                document.getElementById('completedCount').textContent = data.completed_projects || 0;
-                document.getElementById('totalBudget').textContent = formatCurrency(data.total_budget_allocated || 0);
+                 document.getElementById('activeCount').textContent = data.active_projects || 0;
+                 document.getElementById('overdueCount').textContent = data.overdue_projects || 0;
+                 document.getElementById('completedCount').textContent = data.completed_projects || 0;
+                 document.getElementById('totalBudget').textContent = formatCurrency(data.total_budget_allocated || 0);
+                 document.getElementById('totalBudgetBurnt').textContent = formatCurrency(data.total_budget_burnt || 0);
             } catch (error) {
                 console.error('Error loading summary:', error);
             }
