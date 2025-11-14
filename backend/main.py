@@ -9,7 +9,7 @@ from api import project_analytics, auth
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="REST APIs for Project Analytics Dashboard",
+    description="REST APIs for Project Analytics",
     docs_url="/docs" if settings.DEBUG else None,
     redoc_url="/redoc" if settings.DEBUG else None
 )

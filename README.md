@@ -53,7 +53,7 @@ backend/                    # FastAPI backend service
 └── core/                   # Core utilities
 
 frontend/                   # Frontend dashboards
-└── project-analytics.html  # Project Analytics dashboard
+└── project-analytics.html  # Project Analytics
 
 docs/                       # Documentation
 └── ...                     # Module-specific docs
