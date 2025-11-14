@@ -1,4 +1,4 @@
-# Projex WFM Analytics Dashboard
+# Projex - WFM Analytics Dashboard
 
 Workforce Management Analytics Dashboard for GDC Consultants.
 
