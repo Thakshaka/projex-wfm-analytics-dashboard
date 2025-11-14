@@ -179,10 +179,10 @@ async def get_manager_leaderboard(
             SELECT 
                 p.project_manager,
                 CONCAT(e.first_name, ' ', e.last_name) as manager_name,
-                COUNT(p.project_id) as total_projects,
-                SUM(CASE WHEN p.status = 0 THEN 1 ELSE 0 END) as completed_projects,
-                SUM(CASE WHEN p.status != 0 AND p.end_date < %s THEN 1 ELSE 0 END) as overdue_projects,
-                SUM(CASE WHEN p.status != 0 AND (p.end_date >= %s OR p.end_date IS NULL) THEN 1 ELSE 0 END) as active_projects,
+                COUNT(DISTINCT p.project_id) as total_projects,
+                COUNT(DISTINCT CASE WHEN p.status = 0 THEN p.project_id END) as completed_projects,
+                COUNT(DISTINCT CASE WHEN p.status != 0 AND p.end_date < %s THEN p.project_id END) as overdue_projects,
+                COUNT(DISTINCT CASE WHEN p.status != 0 AND (p.end_date >= %s OR p.end_date IS NULL) THEN p.project_id END) as active_projects,
                 COALESCE(SUM(b.allocated_amount), 0) as total_budget_managed,
                 COALESCE(SUM(b.burnt_amount), 0) as total_burnt,
                 AVG(CASE 
