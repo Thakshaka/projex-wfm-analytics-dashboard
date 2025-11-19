@@ -23,16 +23,30 @@ cp .env.example .env
 
 Edit `backend/.env`:
 
+**Development (Local MySQL):**
 ```env
-# Database
+ENVIRONMENT=dev
 DB_HOST=localhost
 DB_USER=root
 DB_PASSWORD=1234
 DB_NAME=projex_wfm
 DB_PORT=3306
+```
 
-# Environment
-ENVIRONMENT=dev  # or 'prod' for production
+**Production (Azure MySQL Flexible Server):**
+```env
+ENVIRONMENT=prod
+
+# Use connection string for production
+# Format: mysql://user:password@host:port/database?ssl-mode=REQUIRED
+DB_CONNECTION_STRING=mysql://admin@myserver:password@myserver.mysql.database.azure.com:3306/projex_wfm?ssl-mode=REQUIRED
+
+# Or use individual variables
+# DB_HOST=your-server.mysql.database.azure.com
+# DB_USER=your-admin-user@your-server
+# DB_PASSWORD=your-secure-password
+# DB_NAME=projex_wfm
+# DB_PORT=3306
 
 # JWT (required for prod)
 JWT_SECRET_KEY=your-secret-key
@@ -42,6 +56,11 @@ FRONTEND_API_SECRET=your-api-secret
 # CORS (prod only)
 CORS_ORIGINS=https://yourfrontend.com
 ```
+
+**Note:** 
+- Development: Use individual `DB_*` variables
+- Production: Use `DB_CONNECTION_STRING` or individual variables
+- Connection string format: `mysql://user:password@host:port/database?ssl-mode=REQUIRED`
 
 ### 3. Start server
 
@@ -77,9 +96,11 @@ Once server is running:
 - Check port 5000 is free
 
 **DB connection errors:**
-- Verify MySQL is running
-- Check credentials match your DB
+- Verify MySQL is running (dev) or Azure MySQL is accessible (prod)
+- Check credentials match your DB in `.env`
 - Ensure `projex_wfm` database exists
+- For Azure: Verify SSL connection settings (auto-enabled for Azure hosts)
+- Ensure all DB_* variables are set in `.env` (no defaults)
 
 **Auth errors (prod mode):**
 - Ensure `JWT_SECRET_KEY` is set

@@ -20,10 +20,11 @@ class Settings(BaseSettings):
     PORT: int = 5000
 
     # Database
-    DB_HOST: str = "localhost"
-    DB_USER: str = "root"
-    DB_PASSWORD: str = "1234"
-    DB_NAME: str = "projex_wfm"
+    DB_CONNECTION_STRING: Optional[str] = None
+    DB_HOST: Optional[str] = None
+    DB_USER: Optional[str] = None
+    DB_PASSWORD: Optional[str] = None
+    DB_NAME: Optional[str] = None
     DB_PORT: int = 3306
 
     # JWT
